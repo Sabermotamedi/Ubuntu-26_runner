@@ -30,6 +30,10 @@ Examples:
   sudo ./setup.sh --skip cleanup
   ./setup.sh --verify --only editors,ai-tools
 
+Logs:
+  Setup and verification output is saved to logs/setup-YYYYmmdd-HHMMSS.log.
+  Override the location with SETUP_LOG_DIR or SETUP_LOG_FILE.
+
 Individual group scripts can also run directly:
   sudo ./groups/70-postgres-pgadmin.sh
   ./groups/70-postgres-pgadmin.sh --verify
@@ -120,6 +124,8 @@ if [[ "${#SELECTED_GROUPS[@]}" -eq 0 ]]; then
   log_error "No setup groups selected."
   exit 2
 fi
+
+start_setup_log_capture
 
 if [[ "$VERIFY_ONLY" -eq 1 ]]; then
   check_ubuntu_version

@@ -12,6 +12,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 SUPPORTED_UBUNTU_MAJOR="${SUPPORTED_UBUNTU_MAJOR:-26}"
 APT_UPDATED=0
+SETUP_LOG_CAPTURE_STARTED=0
 
 FAILED_STEPS=()
 FAILED_PACKAGES=()
@@ -85,6 +86,46 @@ as_root() {
   else
     sudo "$@"
   fi
+}
+
+start_setup_log_capture() {
+  if [[ "$SETUP_LOG_CAPTURE_STARTED" -eq 1 ]]; then
+    return 0
+  fi
+
+  local common_dir
+  local project_dir
+  local log_dir
+  local log_file
+  local timestamp
+
+  common_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || {
+    log_warn "Could not determine setup log directory"
+    return 1
+  }
+  project_dir="$(cd -- "$common_dir/.." && pwd)" || {
+    log_warn "Could not determine setup log directory"
+    return 1
+  }
+
+  if [[ -n "${SETUP_LOG_FILE:-}" ]]; then
+    log_file="$SETUP_LOG_FILE"
+    log_dir="$(dirname -- "$log_file")"
+  else
+    log_dir="${SETUP_LOG_DIR:-$project_dir/logs}"
+    timestamp="$(date +%Y%m%d-%H%M%S)"
+    log_file="$log_dir/setup-$timestamp.log"
+  fi
+
+  if ! mkdir -p "$log_dir" || ! : >>"$log_file"; then
+    log_warn "Could not create setup log file: $log_file"
+    return 1
+  fi
+
+  SETUP_LOG_CAPTURE_STARTED=1
+  export SETUP_LOG_FILE="$log_file"
+  exec > >(tee -a "$log_file") 2>&1
+  log_info "Saving setup log to: $log_file"
 }
 
 apt_cmd() {
@@ -606,6 +647,7 @@ run_group_file_cli() {
   done
 
   if [[ "$verify_only" -eq 1 ]]; then
+    start_setup_log_capture
     check_ubuntu_version
     if verify_selected_groups "$group_name"; then
       exit 0
@@ -613,6 +655,7 @@ run_group_file_cli() {
     exit 1
   fi
 
+  start_setup_log_capture
   bootstrap_setup
   run_group_install "$group_name"
   if verify_selected_groups "$group_name"; then
