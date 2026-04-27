@@ -146,7 +146,9 @@ run_selected_group_installs "${SELECTED_GROUPS[@]}"
 if verify_selected_groups "${SELECTED_GROUPS[@]}"; then
   log_section "Setup complete"
   log_info "All selected groups are installed."
-  log_info "If docker group membership changed, log out and log back in."
+  if array_contains "docker" "${SELECTED_GROUPS[@]}"; then
+    log_info "If docker group membership changed, log out and log back in."
+  fi
   exit 0
 fi
 
