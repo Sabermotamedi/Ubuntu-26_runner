@@ -29,6 +29,7 @@ The setup is organized by group:
 - `postgres-pgadmin`: PostgreSQL, PostgreSQL client/dev files, pgAdmin.
 - `tools`: htop, neovim, tmux, fzf, tree, network tools, shellcheck, cron, fail2ban, ufw.
 - `editors`: VS Code and Cursor.
+- `chrome-postman`: Google Chrome and Postman.
 - `ai-tools`: OpenCode.
 - `cleanup`: apt autoremove and autoclean.
 
@@ -63,6 +64,14 @@ Verify without installing:
 ```bash
 ./setup.sh --verify
 ```
+
+Setup and verification output is saved automatically under `logs/`:
+
+```text
+logs/setup-YYYYmmdd-HHMMSS.log
+```
+
+You can override the log location with `SETUP_LOG_DIR` or `SETUP_LOG_FILE`.
 
 Run one group directly:
 
