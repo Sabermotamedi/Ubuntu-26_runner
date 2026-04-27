@@ -98,6 +98,10 @@ start_setup_log_capture() {
   local log_dir
   local log_file
   local timestamp
+  local default_log_dir=0
+  local target_group
+  local target_home
+  local target_user
 
   common_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)" || {
     log_warn "Could not determine setup log directory"
@@ -113,13 +117,42 @@ start_setup_log_capture() {
     log_dir="$(dirname -- "$log_file")"
   else
     log_dir="${SETUP_LOG_DIR:-$project_dir/logs}"
+    if [[ -z "${SETUP_LOG_DIR:-}" ]]; then
+      default_log_dir=1
+    fi
     timestamp="$(date +%Y%m%d-%H%M%S)"
     log_file="$log_dir/setup-$timestamp.log"
   fi
 
-  if ! mkdir -p "$log_dir" || ! : >>"$log_file"; then
-    log_warn "Could not create setup log file: $log_file"
-    return 1
+  if mkdir -p "$log_dir" >/dev/null 2>&1; then
+    if [[ "${EUID}" -eq 0 && "$default_log_dir" -eq 1 ]]; then
+      target_user="$(get_target_user)"
+      if [[ "$target_user" != "root" ]]; then
+        target_group="$(id -gn "$target_user" 2>/dev/null || printf '%s' "$target_user")"
+        chown "$target_user:$target_group" "$log_dir" >/dev/null 2>&1 || true
+      fi
+    fi
+  fi
+
+  if ! touch "$log_file" >/dev/null 2>&1; then
+    if [[ -z "${SETUP_LOG_FILE:-}" && "$default_log_dir" -eq 1 ]]; then
+      target_home="$(get_target_home)"
+      log_dir="$target_home/.local/state/ubuntu-26-runner/logs"
+      log_file="$log_dir/setup-$timestamp.log"
+    fi
+
+    if ! mkdir -p "$log_dir" >/dev/null 2>&1 || ! touch "$log_file" >/dev/null 2>&1; then
+      log_warn "Could not create setup log file: $log_file"
+      return 1
+    fi
+  fi
+
+  if [[ "${EUID}" -eq 0 && "$default_log_dir" -eq 1 ]]; then
+    target_user="$(get_target_user)"
+    if [[ "$target_user" != "root" ]]; then
+      target_group="$(id -gn "$target_user" 2>/dev/null || printf '%s' "$target_user")"
+      chown "$target_user:$target_group" "$log_file" >/dev/null 2>&1 || true
+    fi
   fi
 
   SETUP_LOG_CAPTURE_STARTED=1

@@ -65,13 +65,13 @@ Verify without installing:
 ./setup.sh --verify
 ```
 
-Setup and verification output is saved automatically under `logs/`:
+Setup and verification output is saved automatically under `logs/` when that directory is writable:
 
 ```text
 logs/setup-YYYYmmdd-HHMMSS.log
 ```
 
-You can override the log location with `SETUP_LOG_DIR` or `SETUP_LOG_FILE`.
+If the default log directory is not writable, logs are saved under `~/.local/state/ubuntu-26-runner/logs/`. You can override the log location with `SETUP_LOG_DIR` or `SETUP_LOG_FILE`.
 
 Run one group directly:
 
@@ -115,3 +115,7 @@ sudo ./setup.sh --only my-tools
 `setup.sh` is only the runner. Shared logic lives in `lib/common.sh`. Each install area lives in its own file under `groups/`.
 
 This makes the setup easier to maintain because adding a new package group does not require changing the main script.
+
+## CI Checks
+
+GitHub Actions checks the setup scripts on every push and pull request. The workflow runs Bash syntax checks, ShellCheck, group discovery, and a safe `cleanup` verification smoke test without installing the full developer environment.
