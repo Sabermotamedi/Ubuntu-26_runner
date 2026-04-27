@@ -18,6 +18,11 @@ configure_google_chrome_repository() {
 
   as_root install -m 0755 -d /etc/apt/keyrings || return 1
 
+  if [[ -f /etc/apt/sources.list.d/google-chrome.sources ]] && grep -q "dl.google.com/linux/chrome-stable/deb" /etc/apt/sources.list.d/google-chrome.sources; then
+    log_info "Removing old Google Chrome apt source: /etc/apt/sources.list.d/google-chrome.sources"
+    as_root rm -f /etc/apt/sources.list.d/google-chrome.sources || return 1
+  fi
+
   if [[ ! -f /etc/apt/keyrings/google-chrome.gpg ]]; then
     log_info "Installing Google Chrome repository signing key"
     tmp_asc="$(mktemp)" || return 1
