@@ -24,12 +24,12 @@ jobs:
 
       - name: Check Bash syntax
         run: |
-          for file in setup.sh lib/common.sh groups/*.sh; do
+          for file in install.sh setup.sh lib/common.sh groups/*.sh; do
             bash -n "$file"
           done
 
       - name: Run ShellCheck
-        run: shellcheck -x setup.sh lib/common.sh groups/*.sh
+        run: shellcheck -x install.sh setup.sh lib/common.sh groups/*.sh
 
       - name: Check group discovery
         run: ./setup.sh --list
