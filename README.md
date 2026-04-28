@@ -33,7 +33,29 @@ The setup is organized by group:
 - `ai-tools`: OpenCode.
 - `cleanup`: apt autoremove and autoclean.
 
-## Basic Usage
+## One-Command Install
+
+Run the latest `main` version without cloning the repository first:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Sabermotamedi/Ubuntu-26_runner/main/install.sh | bash
+```
+
+Run selected groups the same way:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Sabermotamedi/Ubuntu-26_runner/main/install.sh | bash -s -- --only docker,node,python
+```
+
+If `curl` is not installed but `wget` is available:
+
+```bash
+wget -qO- https://raw.githubusercontent.com/Sabermotamedi/Ubuntu-26_runner/main/install.sh | bash
+```
+
+The installer downloads this repository to a temporary directory, runs `setup.sh`, and asks for `sudo` only when installation needs it. Logs are saved under `~/.local/state/ubuntu-26-runner/logs/` unless you set `SETUP_LOG_DIR` or `SETUP_LOG_FILE`.
+
+## Manual Usage
 
 Run everything:
 
