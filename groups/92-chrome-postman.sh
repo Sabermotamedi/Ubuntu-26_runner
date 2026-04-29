@@ -74,7 +74,9 @@ install_google_chrome() {
   return "$failed"
 }
 
-install_postman() {
+install_snap_app() {
+  local package="$1"
+  local label="$2"
   local failed=0
 
   apt_install_packages snapd || failed=1
@@ -90,19 +92,27 @@ install_postman() {
 
   as_root snap wait system seed.loaded >/dev/null 2>&1 || true
 
-  if snap list postman >/dev/null 2>&1; then
-    log_info "Refreshing Postman snap"
-    as_root snap refresh postman || failed=1
+  if snap list "$package" >/dev/null 2>&1; then
+    log_info "Refreshing $label snap"
+    as_root snap refresh "$package" || failed=1
   else
-    log_info "Installing Postman snap"
-    as_root snap install postman || failed=1
+    log_info "Installing $label snap"
+    as_root snap install "$package" || failed=1
   fi
 
-  if snap list postman >/dev/null 2>&1 || command -v postman >/dev/null 2>&1 || [[ -x /snap/bin/postman ]]; then
+  if snap list "$package" >/dev/null 2>&1 || command -v "$package" >/dev/null 2>&1 || [[ -x "/snap/bin/$package" ]]; then
     return "$failed"
   fi
 
   return 1
+}
+
+install_postman() {
+  install_snap_app postman Postman
+}
+
+install_microsoft_teams() {
+  install_snap_app teams-for-linux "Microsoft Teams"
 }
 
 configure_anydesk_repository() {
@@ -141,6 +151,7 @@ install_chrome_postman() {
   install_google_chrome || failed=1
   install_postman || failed=1
   install_anydesk || failed=1
+  install_microsoft_teams || failed=1
 
   return "$failed"
 }
@@ -172,13 +183,23 @@ check_anydesk() {
   fi
 }
 
+check_microsoft_teams() {
+  if command -v teams-for-linux >/dev/null 2>&1 || [[ -x /snap/bin/teams-for-linux ]] || (command -v snap >/dev/null 2>&1 && snap list teams-for-linux >/dev/null 2>&1); then
+    printf '  - [ok] Microsoft Teams\n'
+  else
+    printf '  - [missing] Microsoft Teams\n'
+    MISSING_REQUIRED+=("Microsoft Teams")
+  fi
+}
+
 verify_chrome_postman() {
   check_google_chrome
   check_postman
   check_anydesk
+  check_microsoft_teams
 }
 
-register_group "chrome-postman" "Google Chrome, Postman, and AnyDesk" install_chrome_postman verify_chrome_postman
+register_group "chrome-postman" "Google Chrome, Postman, AnyDesk, and Microsoft Teams" install_chrome_postman verify_chrome_postman
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   run_group_file_cli "chrome-postman" "$@"

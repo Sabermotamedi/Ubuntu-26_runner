@@ -29,7 +29,7 @@ The setup is organized by group:
 - `postgres-pgadmin`: PostgreSQL, PostgreSQL client/dev files, pgAdmin, DBeaver.
 - `tools`: htop, neovim, tmux, fzf, tree, network tools, shellcheck, cron, fail2ban, ufw.
 - `editors`: VS Code and Cursor.
-- `chrome-postman`: Google Chrome, Postman, and AnyDesk.
+- `chrome-postman`: Google Chrome, Postman, AnyDesk, and Microsoft Teams.
 - `ai-tools`: OpenCode.
 - `cleanup`: apt autoremove and autoclean.
 
