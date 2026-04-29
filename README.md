@@ -26,10 +26,10 @@ The setup is organized by group:
 - `node`: NVM and latest Node.js LTS.
 - `docker`: Docker Engine, Docker Compose plugin, docker user group setup.
 - `dotnet`: latest available .NET SDK.
-- `postgres-pgadmin`: PostgreSQL, PostgreSQL client/dev files, pgAdmin.
+- `postgres-pgadmin`: PostgreSQL, PostgreSQL client/dev files, pgAdmin, DBeaver.
 - `tools`: htop, neovim, tmux, fzf, tree, network tools, shellcheck, cron, fail2ban, ufw.
 - `editors`: VS Code and Cursor.
-- `chrome-postman`: Google Chrome and Postman.
+- `chrome-postman`: Google Chrome, Postman, and AnyDesk.
 - `ai-tools`: OpenCode.
 - `cleanup`: apt autoremove and autoclean.
 

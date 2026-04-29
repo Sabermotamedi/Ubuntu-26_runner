@@ -105,11 +105,42 @@ install_postman() {
   return 1
 }
 
+configure_anydesk_repository() {
+  local repo_line
+
+  as_root install -m 0755 -d /etc/apt/keyrings || return 1
+  log_info "Installing/updating AnyDesk repository signing key"
+  download_root_file https://keys.anydesk.com/repos/DEB-GPG-KEY /etc/apt/keyrings/keys.anydesk.com.asc 0644 || return 1
+
+  repo_line="deb [signed-by=/etc/apt/keyrings/keys.anydesk.com.asc] https://deb.anydesk.com all main"
+  write_root_file /etc/apt/sources.list.d/anydesk-stable.list "$repo_line" 0644 || return 1
+  force_apt_update
+}
+
+install_anydesk() {
+  local failed=0
+
+  if configure_anydesk_repository; then
+    apt_install_packages anydesk || failed=1
+  elif is_pkg_installed anydesk || command -v anydesk >/dev/null 2>&1; then
+    log_warn "AnyDesk repository setup failed, but AnyDesk is already installed"
+  else
+    failed=1
+  fi
+
+  if is_pkg_installed anydesk || command -v anydesk >/dev/null 2>&1; then
+    return "$failed"
+  fi
+
+  return 1
+}
+
 install_chrome_postman() {
   local failed=0
 
   install_google_chrome || failed=1
   install_postman || failed=1
+  install_anydesk || failed=1
 
   return "$failed"
 }
@@ -132,12 +163,22 @@ check_postman() {
   fi
 }
 
+check_anydesk() {
+  if is_pkg_installed anydesk || command -v anydesk >/dev/null 2>&1; then
+    printf '  - [ok] AnyDesk\n'
+  else
+    printf '  - [missing] AnyDesk\n'
+    MISSING_REQUIRED+=("AnyDesk")
+  fi
+}
+
 verify_chrome_postman() {
   check_google_chrome
   check_postman
+  check_anydesk
 }
 
-register_group "chrome-postman" "Google Chrome and Postman" install_chrome_postman verify_chrome_postman
+register_group "chrome-postman" "Google Chrome, Postman, and AnyDesk" install_chrome_postman verify_chrome_postman
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   run_group_file_cli "chrome-postman" "$@"
